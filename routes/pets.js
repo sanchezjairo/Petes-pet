@@ -32,15 +32,23 @@ const client = new Upload(process.env.S3_BUCKET, {
 module.exports = (app) => {
 
   // SEARCH PETS
-  app.get('/search', (req, res) => {
-    term = new RegExp(req.query.term, 'i')
+  app.get('/search', function (req, res) {
+    Pet
+        .find(
+            { $text : { $search : req.query.term } },
+            { score : { $meta: "textScore" } }
+        )
+        .sort({ score : { $meta : 'textScore' } })
+        .limit(20)
+        .exec(function(err, pets) {
+          if (err) { return res.status(400).send(err) }
   
-    Pet.find({$or:[
-      {'name': term},
-      {'species': term}
-    ]}).exec((err, pets) => {
-      res.render('pets-index', { pets: pets });
-    })
+          if (req.header('Content-Type') == 'application/json') {
+            return res.json({ pets: pets });
+          } else {
+            return res.render('pets-index', { pets: pets, term: req.query.term });
+          }
+        });
   });
 
   // INDEX PET => index.js
