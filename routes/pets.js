@@ -1,5 +1,6 @@
 // MODELS
 const Pet = require('../models/pet');
+const mailer = require('../utils/mailer');
 // UPLOADING TO AWS S3
 const multer  = require('multer');
 const upload = multer({ dest: 'uploads/' });
